@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cykes - Hiking trails in Cyprus</title>
+  <meta name="description" content="A free, simple map of hiking trails in Cyprus: Troodos nature trails, Akamas, the E4 and more. Filter by region and difficulty, download GPX, and navigate to the start.">
+  <meta name="theme-color" content="#1d4a3a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231d4a3a'/%3E%3Cpath d='M8 48 26 20l9 13 6-8 15 23Z' fill='%23f4efe4'/%3E%3Cpath d='M14 50c10-6 18 2 26-3s10-4 14-2' stroke='%23d9673f' stroke-width='4' fill='none' stroke-linecap='round' stroke-dasharray='5 5'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <a class="brand" href="#" id="home">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="currentColor"/><path d="M8 48 26 20l9 13 6-8 15 23Z" fill="#f4efe4"/><path d="M14 50c10-6 18 2 26-3s10-4 14-2" stroke="#d9673f" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="5 5"/></svg>
+        <span>Cykes</span>
+      </a>
+      <p class="tag">Hiking trails in Cyprus</p>
+      <button class="about-btn" id="aboutBtn" type="button">About</button>
+    </header>
+
+    <main class="map-wrap">
+      <div id="map" role="region" aria-label="Map of hiking trails"></div>
+      <button class="map-btn locate" id="locateBtn" type="button" title="Show my location" aria-label="Show my location">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+      <div class="legend" aria-hidden="true">
+        <span><i class="easy"></i>Easy</span><span><i class="moderate"></i>Moderate</span><span><i class="hard"></i>Hard</span>
+      </div>
+    </main>
+
+    <aside class="panel" id="panel">
+      <section id="listView">
+        <div class="filters">
+          <label class="search">
+            <span class="sr">Search trails</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input id="q" type="search" placeholder="Search trails, villages, E4..." autocomplete="off">
+          </label>
+          <div class="row">
+            <label class="sel"><span>Region</span>
+              <select id="region"><option value="">All regions</option></select>
+            </label>
+            <label class="sel"><span>Length</span>
+              <select id="length">
+                <option value="">Any length</option>
+                <option value="0-5">Under 5 km</option>
+                <option value="5-10">5 - 10 km</option>
+                <option value="10-20">10 - 20 km</option>
+                <option value="20-9999">Over 20 km</option>
+              </select>
+            </label>
+          </div>
+          <div class="chips" role="group" aria-label="Difficulty">
+            <button type="button" class="chip" data-diff="easy" aria-pressed="false"><i class="easy"></i>Easy</button>
+            <button type="button" class="chip" data-diff="moderate" aria-pressed="false"><i class="moderate"></i>Moderate</button>
+            <button type="button" class="chip" data-diff="hard" aria-pressed="false"><i class="hard"></i>Hard</button>
+          </div>
+          <div class="meta">
+            <span id="count">Loading trails...</span>
+            <label class="sort"><span class="sr">Sort by</span>
+              <select id="sort">
+                <option value="name">A - Z</option>
+                <option value="short">Shortest first</option>
+                <option value="long">Longest first</option>
+                <option value="near">Nearest to me</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <ul class="list" id="list" aria-live="polite"></ul>
+      </section>
+
+      <section id="detailView" hidden></section>
+    </aside>
+  </div>
+
+  <dialog id="about">
+    <form method="dialog">
+      <h2>About Cykes</h2>
+      <p>Cykes is a free, simple map of hiking trails in Cyprus. No account, no ads.</p>
+      <p><strong>Trail data</strong> comes from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, © OpenStreetMap contributors, available under the Open Database License. Trails are refreshed from OpenStreetMap every week. If a trail is missing or wrong, you can fix it on OpenStreetMap and it will show up here.</p>
+      <p><strong>Elevation</strong> is estimated from NASA SRTM 30 m data via Open Topo Data. Difficulty comes from OpenStreetMap where mappers set it, otherwise it is estimated from length and climbing and marked "estimated".</p>
+      <p><strong>Maps</strong>: OpenStreetMap standard tiles, and OpenTopoMap (CC-BY-SA).</p>
+      <p class="warn">Always check conditions before you go. Trails can be closed after fires or storms, and summer heat in Cyprus is serious: start early and carry plenty of water.</p>
+      <p class="small" id="dataDate"></p>
+      <button class="btn primary" value="close">Close</button>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

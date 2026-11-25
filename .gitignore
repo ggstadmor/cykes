@@ -1,0 +1,4 @@
+node_modules/
+_site/
+data/trails.geojson
+.DS_Store
